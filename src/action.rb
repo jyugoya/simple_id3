@@ -2,22 +2,27 @@
 
 class Action
 
-  def initialize(n, evf, rpf, crs) # SimpleTagをひとつは取る
+  def initialize(n, evf, rpf)
     @name = n
     @eval_flag = evf
     @roleplay_flag = rpf
-    @commands = crs
+    @commands = []
   end
 
-  def add(cr)
-    # @commands << SimpleTag.new(tagcat, tagrate)
+  def getCommandsSize()
+    @commands.size
+  end
+
+  def addCR(cr)
+    @commands << cr
+    self
   end
 
   def getName()
     @name
   end
 
-  def getCommand(index)
+  def getCR(index)
     @commands[index]
   end
 
@@ -30,36 +35,85 @@ class Action
   end
 
   def getCategory()
-    cats = []
-    for cr in @commands do
-      # cats[cr.getTag().getCategory()] +=1
+    ctags = getCategoryTags()
+    c = ctags.shift().getCategory()
+    for t in ctags do 
+      c += "/" + t.getCategory()
     end
-    cr.getCategory()
+    c
+  end
+
+  def getCategoryTags()
+    s = getCommandsSize()
+    cats = Hash.new {|cats, key| cats[key] = 0}
+    for cr in @commands do
+      tags = cr.getTags()
+      for t in tags do
+        cats[t] += 1
+      end
+    end
+    
+    ctags = []
+    cats.each{|key, value|
+      if value >= (s / 2.0) then
+        ctags.push(key)
+      end
+    }
+    ctags
   end
 
   def getRank(roleplay)
     if @roleplay_flag && roleplay then
       @commands.size * 100
     else
-      getTagCommands().size * 100
+      getCategoryCommands().size * 100
     end
   end
 
-  def getTagCommands()
-     @commands
+  def getCategoryCommands()
+    ctags = getCategoryTags()
+    cms = []
+    for cr in @commands do
+      tags = cr.getTags()
+      for t in tags do
+        if ctags.index(t) != nil then
+          cms.push(cr)
+          break
+        end
+      end
+    end
+    cms
   end
 
-  def getPower()
+  def getPower(roleplay, archtype, prereg)
     power = 0
-    for c in @commands do
+
+    if roleplay then
+      cms = @commands
+    else
+      cms = getCategoryCommands()
+    end
+
+    for c in cms do
       power += c.getPower()
     end
-    power + @commands.size * 2
-    power * 2.5
+    power += cms.size * 2
+
+    if archtype then
+      power = power * 2.5
+    elsif prereg then
+      power = power * 2
+    end
+
+    power
   end
 
   def getRisk()
-    0
+    r = 0
+    for cr in @commands do
+      r += cr.getCost()
+    end
+    r / 5
   end
 
 end

@@ -1,32 +1,16 @@
-﻿require '../src/simple_tag'
+﻿class Tag
 
-# Composite Pattern にすべきかもと思いつつ、とりあえずただのコンポジットで
-class Tag
-
-  def initialize(tagcat, tagrate) # SimpleTagをひとつは取る
-    @tags = [SimpleTag.new(tagcat, tagrate)]
-  end
-
-  def add(tagcat, tagrate)
-    @tags << SimpleTag.new(tagcat, tagrate)
-    self
+  def initialize(cat, rate)
+    @category = cat
+    @rating = rate
   end
 
   def getCategory()
-    ary = @tags.dup
-    cat = ary.shift().getCategory()
-    for t in ary do
-      cat += "/" + t.getCategory()
-    end
-    cat
+    @category
   end
 
   def getRating()
-    rat = 0
-    for t in @tags do
-      rat += t.getRating()
-    end
-    rat
+    @rating
   end
 
 end
