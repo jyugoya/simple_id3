@@ -85,7 +85,7 @@ class Action
     cms
   end
 
-  def getPower(roleplay, archtype, prereg)
+  def getPower(roleplay, archetype, prereg)
     power = 0
 
     if roleplay then
@@ -99,7 +99,7 @@ class Action
     end
     power += cms.size * 2
 
-    if archtype then
+    if archetype then
       power = power * 2.5
     elsif prereg then
       power = power * 2

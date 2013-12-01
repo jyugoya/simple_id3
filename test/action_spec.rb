@@ -108,7 +108,7 @@ describe Action do
       t = Tag.new("アクション",4)
       cr = CommandResource.new("ダミーＣＲ", 3).addTag(t)
       proc {
-        a.addCR(cr)
+        @a.addCR(cr)
       }.should raise_error
     end
   end
