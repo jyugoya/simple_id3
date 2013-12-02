@@ -1,4 +1,5 @@
-﻿require '../src/sqlite3_factory'
+﻿# -*- encoding: utf-8 -*-
+require '../src/sqlite3_factory'
 require '../src/tag'
 
 describe SQLite3Factory do
@@ -96,20 +97,23 @@ describe SQLite3Factory do
 
     it "作成し削除できる" do
       expect{
-        @factory.createCommandResourceTable()
-        @factory.dropCommandResourceTable()
+        @factory.createTagTable()
+        @factory.createAllTablesForCR()
+        @factory.dropAllTablesForCR()
+        @factory.dropTagTable()
       }.to_not raise_error # TODO: Errorの型特定
     end
 
     describe "テーブルおよびTagのテーブルとハッシュがある状態で" do
       before do
-        @factory.createCommandResourceTable()
         @factory.createTagTable()
+        @factory.createAllTablesForCR()
 
         @factory.insertTag(Tag.new("魔法", 2))
         @factory.insertTag(Tag.new("攻撃", 1))
         @factory.insertTag(Tag.new("防御", 4))
         @tags = @factory.getAllTags()
+
       end
 
       it "CRデータを新規に１つ挿入できる" do
@@ -118,11 +122,41 @@ describe SQLite3Factory do
       end
 
       it "CRデータを新規作成後取得できる" do
-        fail "Not yet implemented!"
+        cr1 = CommandResource.new(1, "ダミー", 0).addTag(@tags['攻撃']).addTag(@tags['魔法'])
+        @factory.insertCR(cr1)
+
+        cr2 = @factory.getCR(1, @tags)
+        cr2.getID().should == 1
+        cr2.getName().should == "ダミー"
+        cr2.getPower().should == 0
+        tags = cr2.getTags()
+        # 順番の保証は実はない
+        tags[0].getCategory().should == '攻撃'
+        tags[1].getCategory().should == '魔法'
       end
 
-      it "CRデータを更新できる" do
-        fail "Not yet implemented!"
+      it "CRデータを変更して更新できる" do
+        cr1 = CommandResource.new(1, "ダミー", 0).addTag(@tags['攻撃']).addTag(@tags['魔法'])
+        @factory.insertCR(cr1)
+
+        cr1.setName("変更後の文字列")
+        cr1.setPower(2)
+        cr1.removeTag('攻撃')
+        cr1.addTag('戦闘')
+        cr1.addTag('アクション')
+
+        @factory.updateCR(cr1)
+
+        cr2 = @factory.getCR(1, @tags)
+        cr2.getID().should == 1
+        cr2.getName().should == "変更後の文字列"
+        cr2.getPower().should == 2
+        tags = cr2.getTags()
+        tags.size == 3
+        # 順番の保証は実はない
+        tags[0].getCategory().should == '魔法'
+        tags[0].getCategory().should == '戦闘'
+        tags[0].getCategory().should == 'アクション'
       end
 
       it "新規作成したCRデータを削除できる（その後の取得がnilになる）" do
@@ -138,7 +172,7 @@ describe SQLite3Factory do
       end
 
       after do
-        @factory.dropCommandResourceTable()
+        @factory.dropAllTablesForCR()
         @factory.dropTagTable()
       end
     end

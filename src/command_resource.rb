@@ -1,4 +1,6 @@
-﻿class CommandResource
+﻿# -*- encoding: utf-8 -*-
+
+class CommandResource
 
   def initialize(i, n, p)
     @id = i
@@ -15,8 +17,16 @@
     @name
   end
 
+  def setName(n)
+    @name = n
+  end
+
   def getPower()
     @power
+  end
+
+  def setPower(p)
+    @power = p
   end
 
   def getCategory()
@@ -37,8 +47,18 @@
   end
 
   def addTag(t)
+    if t == nil then raise "Nil tag cannot be added!" end
     @tags.push(t)
     self
+  end
+
+  def removeTag(c)
+    for t in @tags
+      if t.getCategory() then
+        @tags.delete(t)
+        break;
+      end
+    end
   end
 
   def getTags()

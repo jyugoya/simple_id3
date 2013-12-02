@@ -1,4 +1,5 @@
-﻿require '../src/command_resource'
+﻿# -*- encoding: utf-8 -*-
+require '../src/command_resource'
 
 class Action
 

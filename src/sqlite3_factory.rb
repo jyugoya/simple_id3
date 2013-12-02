@@ -1,3 +1,4 @@
+ï»¿# -*- encoding: utf-8 -*-
 require 'sqlite3'
 require '../src/tag'
 require '../src/command_resource'
@@ -8,20 +9,21 @@ class SQLite3Factory
     @dbfile = fname
   end
 
-  # DB‰Šú‰»
+  # DBåˆæœŸåŒ–
   def createDB()
     db = SQLite3::Database.new(@dbfile)
+    db.execute_batch("pragma encoding=utf8;\npragma foreign_keys = ON;")
     db.close()
   end
 
-  # DBíœ
+  # DBå‰Šé™¤
   def dropDB()
     File.unlink(@dbfile)
   end
 
   ####
-  # TagƒNƒ‰ƒX—p‚±‚±‚©‚ç
-  # ƒe[ƒuƒ‹ì¬
+  # Tagã‚¯ãƒ©ã‚¹ç”¨ã“ã“ã‹ã‚‰
+  # ãƒ†ãƒ¼ãƒ–ãƒ«ä½œæˆ
   def createTagTable()
     sql = "create table tag (category varchar(16) primary key not null, rating integer)"
     db = SQLite3::Database.new(@dbfile)
@@ -32,7 +34,7 @@ class SQLite3Factory
     end
   end
 
-  # ƒe[ƒuƒ‹íœ
+  # ãƒ†ãƒ¼ãƒ–ãƒ«å‰Šé™¤
   def dropTagTable()
     sql = "drop table tag"
     db = SQLite3::Database.new(@dbfile)
@@ -43,7 +45,7 @@ class SQLite3Factory
     end
   end
 
-  # V‹Kƒf[ƒ^‘}“ü
+  # æ–°è¦ãƒ‡ãƒ¼ã‚¿æŒ¿å…¥
   def insertTag(tag)
     db = SQLite3::Database.new(@dbfile)
     begin
@@ -53,7 +55,7 @@ class SQLite3Factory
     end
   end
 
-  # Šù‘¶ƒf[ƒ^XV
+  # æ—¢å­˜ãƒ‡ãƒ¼ã‚¿æ›´æ–°
   def updateTag(tag)
     db = SQLite3::Database.new(@dbfile)
     begin
@@ -63,7 +65,7 @@ class SQLite3Factory
     end
   end
 
-  # ƒf[ƒ^íœ
+  # ãƒ‡ãƒ¼ã‚¿å‰Šé™¤
   def deleteTag(key)
     db = SQLite3::Database.new(@dbfile)
     begin
@@ -73,13 +75,14 @@ class SQLite3Factory
     end
   end
 
-  # åƒL[‚Å‚ÌŒŸõŒ‹‰Êæ“¾
+  # ä¸»ã‚­ãƒ¼ã§ã®æ¤œç´¢çµæœå–å¾—
   def getTag(key)
-    db = SQLite3::Database.new(@dbfile)
     t = nil
+    db = SQLite3::Database.new(@dbfile)
     begin
-      db.execute("select * from tag where category = ?", key) do |row|
-        t = Tag.new(row[0],row[1])
+      r = db.get_first_row("select * from tag where category = ?", key)
+      if r != nil then
+        t = Tag.new(r[0],r[1])
       end
     ensure
       db.close()
@@ -87,34 +90,34 @@ class SQLite3Factory
     t
   end
 
-  # ‘Sƒf[ƒ^‚Ìæ“¾
+  # å…¨ãƒ‡ãƒ¼ã‚¿ã®å–å¾—
   def getAllTags()
     db = SQLite3::Database.new(@dbfile)
-    tary = Hash.new {|tary, key| tary[key] = nil}
+    thash = Hash.new {|thash, key| thash[key] = nil}
     begin
       db.execute("select * from tag") do |row|
-        tary[row[0]] = Tag.new(row[0],row[1])
+        thash[row[0]] = Tag.new(row[0],row[1])
       end
     ensure
       db.close()
     end
-    tary
+    thash
   end
-  # TagƒNƒ‰ƒX—p‚±‚±‚Ü‚Å
+  # Tagã‚¯ãƒ©ã‚¹ç”¨ã“ã“ã¾ã§
   ####
 
   ####
-  # CommandResource—p‚±‚±‚©‚ç
-  # ƒe[ƒuƒ‹ì¬
-  def createCommandResourceTable()
-    # CommandResource‚ÆTag‚Í‘½‘Î‘½ŠÖŒW‚È‚Ì‚Å‚»‚ÌŠÖŒW—p‚Ìƒe[ƒuƒ‹‚ª•K—v
-    # ‚Æ‚¢‚¤‚±‚Æ‚ÅA2‚Â‚Ìƒe[ƒuƒ‹ cr / cr_to_tag ‚ğì¬‚·‚é
+  # CommandResourceç”¨ã“ã“ã‹ã‚‰
+  # ãƒ†ãƒ¼ãƒ–ãƒ«ä½œæˆ
+  def createAllTablesForCR()
+    # CommandResourceã¨Tagã¯å¤šå¯¾å¤šé–¢ä¿‚ãªã®ã§ãã®é–¢ä¿‚ç”¨ã®ãƒ†ãƒ¼ãƒ–ãƒ«ãŒå¿…è¦
+    # ã¨ã„ã†ã“ã¨ã§ã€2ã¤ã®ãƒ†ãƒ¼ãƒ–ãƒ« cr / cr2tag ã‚’ä½œæˆã™ã‚‹
     sql =<<-SQL
 CREATE TABLE cr (
   id integer PRIMARY KEY NOT NULL,
   name varchar(32) NOT NULL,
   power integer NOT NULL);
-CREATE TABLE cr_to_tag (
+CREATE TABLE cr2tag (
   cr_id integer NOT NULL REFERENCES cr(id),
   tag_category varchar(16) NOT NULL REFERENCES tag(category),
   PRIMARY KEY(cr_id, tag_category));
@@ -127,63 +130,71 @@ SQL
     end
   end
 
-  # ƒe[ƒuƒ‹íœ
-  def dropCommandResourceTable()
-    sql =<<-SQL
-DROP TABLE cr;
-DROP TABLE cr_to_tag;
-SQL
+
+  # é–¢ä¿‚ã™ã‚‹ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’ã™ã¹ã¦å‰Šé™¤
+  def dropAllTablesForCR()
     db = SQLite3::Database.new(@dbfile)
-    begin
-      db.execute_batch(sql)
-    ensure
-      db.close()
+    db.transaction do
+      db.execute("DROP TABLE cr")
+      db.execute("DROP TABLE cr2tag")
     end
+    db.close()
   end
 
-  # ƒf[ƒ^‘}“ü
+  # ãƒ‡ãƒ¼ã‚¿æŒ¿å…¥
   def insertCR(cr)
-    sql = "INSERT INTO cr VALUES(:id, :name, :power)"
     db = SQLite3::Database.new(@dbfile)
-    begin
-      db.execute(sql,
+    db.transaction do
+      db.execute("INSERT INTO cr VALUES(:id, :name, :power)",
         "id" => cr.getID(),
          "name" => cr.getName(),
          "power" => cr.getPower())
 
-      sql = ""
-      cr.getTags() do |tag|
-        sql += "INSERT INTO cr_to_tag VALUES(:cr_id, '" + tag.getCategory() + "');"
-      db.execute_batch(sql,
-        "cr_id" => cr.getID())
+      tary = cr.getTags()
+      for tag in tary
+        db.execute("INSERT INTO cr2tag VALUES(:cr_id, :tag_category)",
+        "cr_id" => cr.getID(),
+        "tag_category" => tag.getCategory())
       end
-    ensure
-      db.close()
     end
+    db.close()
   end
 
-  # ƒf[ƒ^XV
+  # ãƒ‡ãƒ¼ã‚¿æ›´æ–°
   def updateCR(cr)
     raise "Not yet implemented!"
   end
 
-  # ƒf[ƒ^íœ
+  # ãƒ‡ãƒ¼ã‚¿å‰Šé™¤
   def deleteCR(key)
     raise "Not yet implemented!"
   end
 
-  # ƒf[ƒ^æ“¾
+  # ãƒ‡ãƒ¼ã‚¿å–å¾—
   def getCR(key, tags)
-    # tag ‚ÌƒnƒbƒVƒ…ƒe[ƒuƒ‹‚©‚çŠY“–‚·‚éTag‚ğE‚Á‚Ä‚­‚é•K—v‚ª‚ ‚é‚Ì‚Å‘æ‚Qˆø”‚Éw’è
-    raise "Not yet implemented!"
+    # tag ã®ãƒãƒƒã‚·ãƒ¥ãƒ†ãƒ¼ãƒ–ãƒ«ã‹ã‚‰è©²å½“ã™ã‚‹Tagã‚’æ‹¾ã£ã¦ãã‚‹å¿…è¦ãŒã‚ã‚‹ã®ã§ç¬¬ï¼’å¼•æ•°ã«æŒ‡å®š
+    cr = nil
+    db = SQLite3::Database.new(@dbfile)
+    db.transaction do
+      r = db.get_first_row("select * from cr where id = ?", key)
+      if r != nil then
+        cr = CommandResource.new(r[0], r[1], r[2])
+        db.execute("select tag_category from cr2tag where cr_id = ?", key) do |row|
+          t = tags[row[0]]
+          if t != nil then cr.addTag(t) end
+        end
+      end
+    end
+    db.close()
+    cr
   end
 
-  # ‘Sƒf[ƒ^æ“¾
+  # å…¨ãƒ‡ãƒ¼ã‚¿å–å¾—
   def getAllCRs(tags)
-    # tag ‚ÌƒnƒbƒVƒ…ƒe[ƒuƒ‹‚©‚çŠY“–‚·‚éTag‚ğE‚Á‚Ä‚­‚é•K—v‚ª‚ ‚é‚Ì‚Åˆø”‚Éw’è
+    # tag ã®ãƒãƒƒã‚·ãƒ¥ãƒ†ãƒ¼ãƒ–ãƒ«ã‹ã‚‰è©²å½“ã™ã‚‹Tagã‚’æ‹¾ã£ã¦ãã‚‹å¿…è¦ãŒã‚ã‚‹ã®ã§å¼•æ•°ã«æŒ‡å®š
     raise "Not yet implemented!"
   end
-  # CommandResource—p‚±‚±‚Ü‚Å
+  # CommandResourceç”¨ã“ã“ã¾ã§
   ###
 end
 

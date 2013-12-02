@@ -1,4 +1,5 @@
-﻿class Tag
+﻿# -*- encoding: utf-8 -*-
+class Tag
 
   def initialize(cat, rate)
     @category = cat

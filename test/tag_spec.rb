@@ -1,4 +1,5 @@
-﻿require '../src/tag'
+﻿# -*- encoding: utf-8 -*-
+require '../src/tag'
 
 describe Tag do
   before do

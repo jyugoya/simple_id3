@@ -1,4 +1,5 @@
-﻿require '../src/command_resource'
+﻿# -*- encoding: utf-8 -*-
+require '../src/command_resource'
 require '../src/tag'
 
 #　戦力が１　コストは－８される。
@@ -36,6 +37,12 @@ describe CommandResource do
       @cr.getCost().should == 10
     end
 
+    it "追加されたTagがnilの時はエラーになる" do
+      expect{
+        @cr.addTag(nil)
+      }.to raise_error
+    end
+
   end
 
   describe "タグが複数ある時" do
@@ -49,6 +56,10 @@ describe CommandResource do
       @cr.getID().should == 2
       @cr.getName().should == "凄い剣技"
       @cr.getPower().should == 3
+      tags = @cr.getTags()
+      tags.size.should == 2
+      tags[0].getCategory().should == "アクション"
+      tags[1].getCategory().should == "戦闘"
     end
 
     it "カテゴリは全タグのカテゴリが合成された文字列になる" do
@@ -61,6 +72,23 @@ describe CommandResource do
 
     it "コストはそのコマンドリソースのパワー(3)*レーティング(5)にパワーによる補正値（-4）を足したもの " do
       @cr.getCost().should == 11
+    end
+
+    it "名前は上書き変更することができる" do
+      @cr.setName("変更後の文字列")
+      @cr.getName().should == "変更後の文字列"
+    end
+
+    it "パワーは上書き変更することができる" do
+      @cr.setPower(5)
+      @cr.getPower().should == 5
+    end
+
+    it "タグはカテゴリを指定して削除することができる" do
+      @cr.removeTag("アクション")
+      tags = @cr.getTags()
+      tags.size.should == 1
+      tags[0].getCategory().should == "戦闘"
     end
   end
 end

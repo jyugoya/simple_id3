@@ -1,4 +1,5 @@
-﻿require '../src/action'
+﻿# -*- encoding: utf-8 -*-
+require '../src/action'
 require '../src/tag'
 require '../src/command_resource'
 
