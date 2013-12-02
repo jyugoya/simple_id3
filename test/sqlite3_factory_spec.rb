@@ -110,8 +110,10 @@ describe SQLite3Factory do
         @factory.createAllTablesForCR()
 
         @factory.insertTag(Tag.new("魔法", 2))
-        @factory.insertTag(Tag.new("攻撃", 1))
+        @factory.insertTag(Tag.new("攻撃", 4))
         @factory.insertTag(Tag.new("防御", 4))
+        @factory.insertTag(Tag.new("戦闘", 1))
+        @factory.insertTag(Tag.new("アクション", 1))
         @tags = @factory.getAllTags()
 
       end
@@ -142,8 +144,8 @@ describe SQLite3Factory do
         cr1.setName("変更後の文字列")
         cr1.setPower(2)
         cr1.removeTag('攻撃')
-        cr1.addTag('戦闘')
-        cr1.addTag('アクション')
+        cr1.addTag(@tags['戦闘'])
+        cr1.addTag(@tags['アクション'])
 
         @factory.updateCR(cr1)
 
@@ -153,22 +155,44 @@ describe SQLite3Factory do
         cr2.getPower().should == 2
         tags = cr2.getTags()
         tags.size == 3
-        # 順番の保証は実はない
-        tags[0].getCategory().should == '魔法'
-        tags[0].getCategory().should == '戦闘'
-        tags[0].getCategory().should == 'アクション'
+        # p tags
       end
 
       it "新規作成したCRデータを削除できる（その後の取得がnilになる）" do
-        fail "Not yet implemented!"
+        cr1 = CommandResource.new(1, "ダミー", 0).addTag(@tags['攻撃']).addTag(@tags['魔法'])
+        @factory.insertCR(cr1)
+        @factory.deleteCR(1)
+
+        cr2 = @factory.getCR(1, @tags)
+        cr2.should == nil
+        # TODO: 削除後のcr2tagテーブルの状況もチェックすべき…
       end
 
-      it "新規作成した3つのCRデータをgetAllTagsを使ってハッシュとして全て取得できる" do
-        fail "Not yet implemented!"
+      it "新規作成した3つのCRデータをgetAllCRsを使ってハッシュとして全て取得できる" do
+        cr1 = CommandResource.new(1, "ダミー１", 3).addTag(@tags['戦闘']).addTag(@tags['魔法'])
+        cr2 = CommandResource.new(2, "ダミー２", 2).addTag(@tags['アクション'])
+        cr3 = CommandResource.new(3, "ダミー３", 1).addTag(@tags['戦闘']).addTag(@tags['攻撃'])
+        
+        @factory.insertCR(cr1)
+        @factory.insertCR(cr2)
+        @factory.insertCR(cr3)
+
+        chash = @factory.getAllCRs(@tags)
+        chash.size.should == 3
       end
 
       it "同じID(主キー)を持つCRデータを新規挿入しようとするとエラーになる" do
-        fail "Not yet implemented!"
+        cr1 = CommandResource.new(1, "ダミー１", 3).addTag(@tags['戦闘']).addTag(@tags['魔法'])
+        cr2 = CommandResource.new(1, "ダミー２", 2).addTag(@tags['アクション'])
+        expect {
+          @factory.insertCR(cr1)
+          @factory.insertCR(cr2)
+        }.to raise_error ( SQLite3::ConstraintException )
+
+        cr3 = @factory.getCR(1, @tags)
+        cr3.getName().should == "ダミー１"
+        cr3.getPower().should == 3
+        cr3.getTags().size.should == 2
       end
 
       after do

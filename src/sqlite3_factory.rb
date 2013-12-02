@@ -128,6 +128,9 @@ SQL
     ensure
       db.close()
     end
+    rescue => e
+      db.close()
+      raise e
   end
 
 
@@ -139,6 +142,9 @@ SQL
       db.execute("DROP TABLE cr2tag")
     end
     db.close()
+    rescue => e
+      db.close()
+      raise e
   end
 
   # データ挿入
@@ -158,16 +164,41 @@ SQL
       end
     end
     db.close()
+    rescue => e
+      db.close()
+      raise e
   end
 
   # データ更新
   def updateCR(cr)
-    raise "Not yet implemented!"
+    db = SQLite3::Database.new(@dbfile)
+    db.transaction do
+      db.execute("update cr set name = ?, power = ? where id = ?", cr.getName(), cr.getPower(), cr.getID())
+      db.execute("delete from cr2tag where cr_id = ?", cr.getID())
+      tary = cr.getTags()
+      for tag in tary
+        db.execute("insert into cr2tag values(:cr_id, :tag_category)",
+        "cr_id" => cr.getID(),
+        "tag_category" => tag.getCategory())
+      end
+    end
+    db.close()
+    rescue => e
+      db.close()
+      raise e
   end
 
   # データ削除
   def deleteCR(key)
-    raise "Not yet implemented!"
+    db = SQLite3::Database.new(@dbfile)
+    db.transaction do
+      db.execute("delete from cr2tag where cr_id = ?", key)
+      db.execute("delete from cr where id = ?", key)
+    end
+    db.close()
+    rescue => e
+      db.close()
+      raise e
   end
 
   # データ取得
@@ -187,12 +218,31 @@ SQL
     end
     db.close()
     cr
+    rescue => e
+      db.close()
+      raise e
   end
 
   # 全データ取得
   def getAllCRs(tags)
     # tag のハッシュテーブルから該当するTagを拾ってくる必要があるので引数に指定
-    raise "Not yet implemented!"
+    chash = Hash.new {|chash, key| chash[key] = nil}
+    db = SQLite3::Database.new(@dbfile)
+    db.transaction do
+      db.execute("select * from cr") do |r|
+        cr = CommandResource.new(r[0], r[1], r[2])
+        db.execute("select tag_category from cr2tag where cr_id = ?", r[0]) do |row|
+          t = tags[row[0]]
+          if t != nil then cr.addTag(t) end
+        end
+        chash[r[0]] = cr
+      end
+    end
+    db.close()
+    chash
+    rescue => e
+      db.close()
+      raise e
   end
   # CommandResource用ここまで
   ###
