@@ -111,7 +111,7 @@ class SQLite3Factory
     # ということで、2つのテーブル cr / cr_to_tag を作成する
     sql =<<-SQL
 CREATE TABLE cr (
-  id integer PRIMARY KEY AUTOINCREMENT,
+  id integer PRIMARY KEY NOT NULL,
   name varchar(32) NOT NULL,
   power integer NOT NULL);
 CREATE TABLE cr_to_tag (
@@ -143,7 +143,24 @@ SQL
 
   # データ挿入
   def insertCR(cr)
-    // sql = "INSERT INTO cr VALUES(:name, :power);"
+    sql = "INSERT INTO cr VALUES(:id, :name, :power)"
+    db = SQLite3::Database.new(@dbfile)
+    begin
+      db.execute(sql,
+        "id" => cr.getID(),
+         "name" => cr.getName(),
+         "power" => cr.getPower())
+
+      sql = ""
+      cr.getTags() do |tag|
+        sql .= "INSERT INTO cr_to_tag VALUES(:cr_id, '" + tag.getCategory() + "');"
+      db.execute_batch(sql,
+        "cr_id" => cr.getID(),
+      end
+    ensure
+      db.close()
+    end
+    raise "Not yet implemented!"
   end
 
   # データ更新
