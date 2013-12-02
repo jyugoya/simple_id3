@@ -64,7 +64,7 @@ class Action
   end
 
   def getRank(roleplay)
-    if @roleplay_flag && roleplay then
+    if roleplay || (@roleplay_flag == false) then
       @commands.size * 100
     else
       getCategoryCommands().size * 100
@@ -101,7 +101,7 @@ class Action
     power += cms.size * 2
 
     if archetype then
-      power = power * 2.5
+      power = (power * 2.5).to_i
     elsif prereg then
       power = power * 2
     end

@@ -9,9 +9,9 @@ describe Action do
       t1 = Tag.new("戦闘",1)
       t2 = Tag.new("攻撃",4)
       t3 = Tag.new("アクション",4)
-      cr1 = CommandResource.new("名剣", 6).addTag(t1).addTag(t2)
-      cr2 = CommandResource.new("短剣", 3).addTag(t1).addTag(t2)
-      cr3 = CommandResource.new("肉体派", 3).addTag(t3)
+      cr1 = CommandResource.new(1, "名剣", 6).addTag(t1).addTag(t2)
+      cr2 = CommandResource.new(2, "短剣", 3).addTag(t1).addTag(t2)
+      cr3 = CommandResource.new(3, "肉体派", 3).addTag(t3)
       @a = Action.new("二刀流", true, true).addCR(cr1).addCR(cr2).addCR(cr3)
     end
 
@@ -33,7 +33,7 @@ describe Action do
       @a.getCategory().should == "戦闘/攻撃"
     end
 
-    it "ランクはＲＰがある場合は全ＣＲの数*100である" do
+    it "ランクはＲＰ要の時、ＲＰがある場合は全ＣＲの数*100である" do
       @a.getRank(true).should == 300
     end
 
@@ -60,8 +60,8 @@ describe Action do
     before do
       t1 = Tag.new("アクション",4)
       t2 = Tag.new("解錠",3)
-      cr1 = CommandResource.new("手先が器用",3).addTag(t1)
-      cr2 = CommandResource.new("解錠師",5).addTag(t2).addTag(t1)
+      cr1 = CommandResource.new(4, "手先が器用",3).addTag(t1)
+      cr2 = CommandResource.new(5, "解錠師",5).addTag(t2).addTag(t1)
       @a = Action.new("解錠", false, true).addCR(cr1).addCR(cr2)
     end
 
@@ -77,11 +77,11 @@ describe Action do
       t3 = Tag.new("魔法",2)
       t4 = Tag.new("攻撃",1)
       t5 = Tag.new("防御",1)
-      cr1 = CommandResource.new("ダミー１", 1).addTag(t1)
-      cr2 = CommandResource.new("ダミー２", 2).addTag(t2).addTag(t3)
-      cr3 = CommandResource.new("ダミー３", 3).addTag(t2).addTag(t4)
-      cr4 = CommandResource.new("ダミー４", 4).addTag(t2).addTag(t5)
-      cr5 = CommandResource.new("ダミー５", 5).addTag(t1)
+      cr1 = CommandResource.new(6, "ダミー１", 1).addTag(t1)
+      cr2 = CommandResource.new(7, "ダミー２", 2).addTag(t2).addTag(t3)
+      cr3 = CommandResource.new(8, "ダミー３", 3).addTag(t2).addTag(t4)
+      cr4 = CommandResource.new(9, "ダミー４", 4).addTag(t2).addTag(t5)
+      cr5 = CommandResource.new(10, "ダミー５", 5).addTag(t1)
       @a = Action.new("ダミー", false, false).addCR(cr1).addCR(cr2).addCR(cr3).addCR(cr4).addCR(cr5)
     end
 
@@ -95,9 +95,18 @@ describe Action do
       @a.getCR(4).getName().should == "ダミー５"
     end
 
+    it "ＲＰ不要の場合、ＲＰがなくてもランクは全ＣＲ数*100である" do
+      @a.getRank(false).should == 500
+    end
+
     # ＣＲあり、アーキタイプなし、事前登録あり
     it "戦力はＲＰがある場合は全ＣＲの戦力の総和(15)にその数*2(10)を加えたもの(25)であり、事前登録で2倍になる" do
       @a.getPower(true, false, true).should == 50
+    end
+
+    # ＣＲあり、アーキタイプあり、事前登録影響なし
+    it "戦力はＲＰがある場合は全ＣＲの戦力の総和(15)にその数*2(10)を加えたもの(25)であり、アーキタイプでで2.5倍（ただし端数切捨て、62.5で、62）になる" do
+      @a.getPower(true, true, false).should == 62
     end
 
     # ＣＲなし、アーキタイプなし、事前登録あり
@@ -107,7 +116,7 @@ describe Action do
 
     it "行動はコマンドリソース５つまでを合成して作る。→6つ以上はエラー" do
       t = Tag.new("アクション",4)
-      cr = CommandResource.new("ダミーＣＲ", 3).addTag(t)
+      cr = CommandResource.new(11, "ダミーＣＲ", 3).addTag(t)
       proc {
         @a.addCR(cr)
       }.should raise_error
