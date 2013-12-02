@@ -1,5 +1,6 @@
 require 'sqlite3'
 require '../src/tag'
+require '../src/command_resource'
 
 class SQLite3Factory
 
@@ -18,7 +19,8 @@ class SQLite3Factory
     File.unlink(@dbfile)
   end
 
-  # Tagクラス用
+  ####
+  # Tagクラス用ここから
   # テーブル作成
   def createTagTable()
     sql = "create table tag (category varchar(16) primary key not null, rating integer)"
@@ -30,7 +32,6 @@ class SQLite3Factory
     end
   end
 
-  # Tagクラス用
   # テーブル削除
   def dropTagTable()
     sql = "drop table tag"
@@ -42,7 +43,6 @@ class SQLite3Factory
     end
   end
 
-  # Tagクラス用
   # 新規データ挿入
   def insertTag(tag)
     db = SQLite3::Database.new(@dbfile)
@@ -53,7 +53,6 @@ class SQLite3Factory
     end
   end
 
-  # Tagクラス用
   # 既存データ更新
   def updateTag(tag)
     db = SQLite3::Database.new(@dbfile)
@@ -64,7 +63,6 @@ class SQLite3Factory
     end
   end
 
-  # Tagクラス用
   # データ削除
   def deleteTag(key)
     db = SQLite3::Database.new(@dbfile)
@@ -75,7 +73,6 @@ class SQLite3Factory
     end
   end
 
-  # Tagクラス用
   # 主キーでの検索結果取得
   def getTag(key)
     db = SQLite3::Database.new(@dbfile)
@@ -90,7 +87,6 @@ class SQLite3Factory
     t
   end
 
-  # Tagクラス用
   # 全データの取得
   def getAllTags()
     db = SQLite3::Database.new(@dbfile)
@@ -104,6 +100,74 @@ class SQLite3Factory
     end
     tary
   end
+  # Tagクラス用ここまで
+  ####
 
+  ####
+  # CommandResource用ここから
+  # テーブル作成
+  def createCommandResourceTable()
+    # CommandResourceとTagは多対多関係なのでその関係用のテーブルが必要
+    # ということで、2つのテーブル cr / cr_to_tag を作成する
+    sql =<<-SQL
+CREATE TABLE cr (
+  id integer PRIMARY KEY AUTOINCREMENT,
+  name varchar(32) NOT NULL,
+  power integer NOT NULL);
+CREATE TABLE cr_to_tag (
+  cr_id integer NOT NULL REFERENCES cr(id),
+  tag_category varchar(16) NOT NULL REFERENCES tag(category),
+  PRIMARY KEY(cr_id, tag_category));
+SQL
+    db = SQLite3::Database.new(@dbfile)
+    begin
+      db.execute_batch(sql)
+    ensure
+      db.close()
+    end
+  end
+
+  # テーブル削除
+  def dropCommandResourceTable()
+    sql =<<-SQL
+DROP TABLE cr;
+DROP TABLE cr_to_tag;
+SQL
+    db = SQLite3::Database.new(@dbfile)
+    begin
+      db.execute_batch(sql)
+    ensure
+      db.close()
+    end
+  end
+
+  # データ挿入
+  def insertCR(cr)
+    // sql = "INSERT INTO cr VALUES(:name, :power);"
+  end
+
+  # データ更新
+  def updateCR(cr)
+    raise "Not yet implemented!"
+  end
+
+  # データ削除
+  def deleteCR(key)
+    raise "Not yet implemented!"
+  end
+
+  # データ取得
+  def getCR(key, tags)
+    # tag のハッシュテーブルから該当するTagを拾ってくる必要があるので第２引数に指定
+    raise "Not yet implemented!"
+  end
+
+  # 全データ取得
+  def getAllCRs(tags)
+    # tag のハッシュテーブルから該当するTagを拾ってくる必要があるので引数に指定
+    raise "Not yet implemented!"
+  end
+  # CommandResource用ここまで
+  ###
 end
 

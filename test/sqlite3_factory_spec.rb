@@ -87,6 +87,60 @@ describe SQLite3Factory do
         @factory.dropTagTable()
       end
     end
+  end
+
+  describe "CommandResourceクラス用テーブルについて" do
+    before do
+      @factory.createDB()
+    end
+
+    it "作成し削除できる" do
+      expect{
+        @factory.createCommandResourceTable()
+        @factory.dropCommandResourceTable()
+      }.to_not raise_error # TODO: Errorの型特定
+    end
+
+    describe "テーブルおよびTagのテーブルとハッシュがある状態で" do
+      before do
+        @factory.createCommandResourceTable()
+        @factory.createTagTable()
+
+        @factory.insertTag(Tag.new("魔法", 2))
+        @factory.insertTag(Tag.new("攻撃", 4))
+        @factory.insertTag(Tag.new("防御", 4))
+        @tags = @factory.getAllTags()
+      end
+
+      it "CRデータを新規に１つ挿入できる" do
+        fail "Not yet implemented!"
+      end
+
+      it "CRデータを新規作成後取得できる" do
+        fail "Not yet implemented!"
+      end
+
+      it "CRデータを更新できる" do
+        fail "Not yet implemented!"
+      end
+
+      it "新規作成したCRデータを削除できる（その後の取得がnilになる）" do
+        fail "Not yet implemented!"
+      end
+
+      it "新規作成した3つのCRデータをgetAllTagsを使ってハッシュとして全て取得できる" do
+        fail "Not yet implemented!"
+      end
+
+      it "同じID(主キー)を持つCRデータを新規挿入しようとするとエラーになる" do
+        fail "Not yet implemented!"
+      end
+
+      after do
+        @factory.dropCommandResourceTable()
+        @factory.dropTagTable()
+      end
+    end
 
     after do
       @factory.dropDB()
