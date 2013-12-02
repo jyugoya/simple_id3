@@ -153,14 +153,13 @@ SQL
 
       sql = ""
       cr.getTags() do |tag|
-        sql .= "INSERT INTO cr_to_tag VALUES(:cr_id, '" + tag.getCategory() + "');"
+        sql += "INSERT INTO cr_to_tag VALUES(:cr_id, '" + tag.getCategory() + "');"
       db.execute_batch(sql,
-        "cr_id" => cr.getID(),
+        "cr_id" => cr.getID())
       end
     ensure
       db.close()
     end
-    raise "Not yet implemented!"
   end
 
   # データ更新

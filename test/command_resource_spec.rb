@@ -15,10 +15,11 @@ describe CommandResource do
 
   describe "タグがひとつの時" do
     before do
-      @cr = CommandResource.new("女である", 4).addTag(Tag.new("一般",3))
+      @cr = CommandResource.new(1, "女である", 4).addTag(Tag.new("一般",3))
     end
 
     it "代入のみ初期化のチェック" do
+      @cr.getID().should == 1
       @cr.getName().should == "女である"
       @cr.getPower().should == 4
     end
@@ -41,10 +42,11 @@ describe CommandResource do
     before do
       t1 = Tag.new("アクション",4)
       t2 = Tag.new("戦闘",1)
-      @cr = CommandResource.new("凄い剣技", 3).addTag(t1).addTag(t2)
+      @cr = CommandResource.new(2, "凄い剣技", 3).addTag(t1).addTag(t2)
     end
 
     it "代入がちゃんとおこなわれている" do
+      @cr.getID().should == 2
       @cr.getName().should == "凄い剣技"
       @cr.getPower().should == 3
     end

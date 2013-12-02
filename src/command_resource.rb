@@ -1,9 +1,14 @@
 ﻿class CommandResource
 
-  def initialize(n, p)
+  def initialize(i, n, p)
+    @id = i
     @name = n
     @power = p
     @tags = []
+  end
+
+  def getID()
+    @id
   end
 
   def getName()

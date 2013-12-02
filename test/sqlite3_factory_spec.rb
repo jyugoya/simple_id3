@@ -107,13 +107,14 @@ describe SQLite3Factory do
         @factory.createTagTable()
 
         @factory.insertTag(Tag.new("魔法", 2))
-        @factory.insertTag(Tag.new("攻撃", 4))
+        @factory.insertTag(Tag.new("攻撃", 1))
         @factory.insertTag(Tag.new("防御", 4))
         @tags = @factory.getAllTags()
       end
 
       it "CRデータを新規に１つ挿入できる" do
-        fail "Not yet implemented!"
+        cr = CommandResource.new(1, "ダミー", 0).addTag(@tags['攻撃']).addTag(@tags['魔法'])
+        @factory.insertCR(cr)
       end
 
       it "CRデータを新規作成後取得できる" do
